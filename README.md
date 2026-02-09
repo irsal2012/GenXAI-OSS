@@ -167,39 +167,6 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for complete details.
 
 ---
 
-## 🚦 Development Roadmap
-
-### Phase 1: Foundation (Weeks 1-4)
-- Core graph engine
-- Basic agent system
-- CLI interface
-- Initial documentation
-
-### Phase 2: Advanced Features (Weeks 5-8)
-- Complete memory system
-- Communication layer
-- 20+ built-in tools
-
-### Phase 3: No-Code Studio (Weeks 9-12)
-- Visual workflow builder
-- REST API
-- Real-time testing
-
-### Phase 4: Enterprise Features (Weeks 13-16)
-- Observability stack
-- Security features
-- 50+ tools total
-
-### Phase 5: Polish & Launch (Weeks 17-20)
-- Documentation
-- Examples & templates
-- Beta testing
-- Official launch 🚀
-
-See [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md) for the timeline.
-
----
-
 ## 💡 Quick Start
 
 ### CLI Quick Start (OSS)
