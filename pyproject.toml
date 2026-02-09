@@ -3,7 +3,7 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "genxai"
+name = "genxai-framework"
 version = "0.1.5"
 description = "GenXAI Core (MIT) - Advanced Agentic AI Framework with Graph-Based Orchestration"
 readme = "README.md"
