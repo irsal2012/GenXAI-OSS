@@ -1,6 +1,6 @@
 # AI Strategy Agent (P2P Brainstorming)
 
-This app implements a **peer-to-peer brainstorming workflow** using the GenXAI framework and `genxai_enterprise` observability hooks. It follows a layered architecture and uses SOLID + GoF patterns.
+This app implements a **peer-to-peer brainstorming workflow** using the GenXAI framework and local observability hooks. It follows a layered architecture and uses SOLID + GoF patterns.
 
 ## Backend (FastAPI)
 
@@ -41,4 +41,4 @@ Set `VITE_API_BASE` in `.env` if backend runs elsewhere.
 ## Notes
 - P2P engine is in `app/domain/services/p2p_engine.py`
 - Strategy policies (consensus/termination) are under `app/domain/policies/`
-- Metrics adapter uses `genxai_enterprise` with a safe fallback
+- Metrics adapter uses a local no-op implementation (`app/infra/metrics/metrics_adapter.py`)

@@ -12,7 +12,7 @@ from app.domain.policies.termination import (
     QualityTerminationPolicy,
     TimeoutTerminationPolicy,
 )
-from app.infra.metrics.enterprise_metrics import EnterpriseMetricsRecorder
+from app.infra.metrics.metrics_adapter import MetricsRecorderAdapter
 from app.infra.repositories.in_memory import InMemoryStrategyRepository
 from app.services.peer_config import build_peer_agents
 
@@ -43,5 +43,5 @@ def build_brainstorm_service(
         openai_api_key=openai_api_key,
     )
     repository = InMemoryStrategyRepository()
-    metrics = EnterpriseMetricsRecorder()
+    metrics = MetricsRecorderAdapter()
     return BrainstormService(engine_factory=engine_factory, repository=repository, metrics=metrics)

@@ -20,6 +20,11 @@ GenXAI is an advanced agentic AI framework designed to surpass existing solution
 > enterprise Studio and related enterprise features have been moved to `enterprise/` as a staging
 > area for a separate commercial repo.
 
+## 🧩 Applications
+
+- **[AI Strategy Agent (P2P Brainstorming)](./applications/ai_strategy_agent/backend/README.md)**: peer-to-peer brainstorming workflow with layered architecture and local observability hooks.
+- **[Travel Planning Agent](./applications/travel_planning_agent/README.md)**: GenXAI-powered travel planning app with FastAPI backend, React frontend, and streaming itinerary updates.
+
 ## ✅ OSS vs Enterprise
 
 **Open-source (MIT) core** — use these for OSS releases:

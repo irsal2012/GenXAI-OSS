@@ -1,4 +1,4 @@
-# Travel Planning Agent (GenXAI + Enterprise)
+# Travel Planning Agent (GenXAI)
 
 This app is a **GenXAI-powered travel planning agent** with:
 - **FastAPI backend** (JWT auth, SQLite, streaming progress, GenXAI workflow)
