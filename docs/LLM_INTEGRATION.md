@@ -468,6 +468,19 @@ agent = AgentFactory.create_agent(
 )
 ```
 
+Config schema snippet (YAML):
+
+```yaml
+id: ranking_agent
+role: Analyst
+goal: Choose the best tool for the task
+llm_model: gpt-4
+enable_llm_ranking: true
+tools:
+  - web_search
+  - database_query
+```
+
 ---
 
 ## Examples

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "genxai-framework"
-version = "0.1.5"
+version = "0.1.6"
 description = "GenXAI Core (MIT) - Advanced Agentic AI Framework with Graph-Based Orchestration"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -138,6 +138,7 @@ addopts = [
 asyncio_mode = "auto"
 filterwarnings = [
     "ignore:Couldn't import C tracer.*:coverage.exceptions.CoverageWarning",
+    "ignore:Exception ignored in.*AsyncHttpxClientWrapper.__del__.*:pytest.PytestUnraisableExceptionWarning",
 ]
 
 [tool.black]

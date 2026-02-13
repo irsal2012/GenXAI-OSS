@@ -1,6 +1,6 @@
 # GenXAI - Advanced Agentic AI Framework
 
-**Version:** 0.1.5  
+**Version:** 0.1.6  
 **Status:** Active Development  
 **License:** MIT
 # Irsal Imran - [irsal2025@gmail.com](mailto:irsal2025@gmail.com)
@@ -46,6 +46,9 @@ GenXAI is an advanced agentic AI framework designed to surpass existing solution
 - **Memory**: Multi-layered memory system
 - **Tools**: 50+ built-in tools + custom tool creation
 - **Personality**: Configurable agent personalities
+- **LLM Ranking (opt-in)**: Safe JSON-based ranking with heuristic fallbacks for tool selection ([docs/LLM_INTEGRATION.md](./docs/LLM_INTEGRATION.md))
+
+> **New in 0.1.6:** LLM ranking utility for tool selection with safe JSON parsing and heuristic fallbacks. See [LLM integration](./docs/LLM_INTEGRATION.md).
 
 ### 💾 Multi-Layered Memory
 - **Short-Term**: Recent conversation context
