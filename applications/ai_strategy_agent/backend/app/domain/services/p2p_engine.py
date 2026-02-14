@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
 import re
 from dataclasses import dataclass
@@ -13,6 +12,7 @@ from typing import Any, Callable, Iterable
 from genxai.core.agent.base import AgentFactory
 from genxai.core.agent.runtime import AgentRuntime
 from genxai.llm.factory import LLMProviderFactory
+from genxai.utils.llm_ranking import RankCandidate, rank_candidates_with_llm
 
 from app.domain.policies.consensus import ConsensusPolicy
 from app.domain.policies.termination import TerminationPolicy
@@ -233,6 +233,10 @@ class P2PStrategyEngine:
         if not messages:
             return []
 
+        candidates_map = self._extract_candidate_initiatives(messages)
+        if not candidates_map:
+            return []
+
         provider = self._llm_provider
         if provider is None:
             provider = LLMProviderFactory.create_provider(
@@ -241,73 +245,51 @@ class P2PStrategyEngine:
                 temperature=0.2,
             )
 
-        content_blocks = []
-        for message in messages:
-            role = message.get("role") or message.get("sender") or "Agent"
-            content = (message.get("content") or "").strip()
-            if not content:
-                continue
-            content_blocks.append(f"{role}: {content[:1200]}")
+        candidates = [
+            RankCandidate(
+                id=name,
+                content=meta.get("rationale", "") or name,
+                metadata={
+                    "owner": meta.get("owner"),
+                    "timeline": meta.get("timeline"),
+                    "dependencies": meta.get("dependencies"),
+                },
+            )
+            for name, meta in candidates_map.items()
+        ]
 
-        prompt = (
-            "You are an AI strategy analyst. Review the peer agent outputs and return the top 3 "
-            "use cases (initiatives) ranked by consensus and business impact. "
-            "Return STRICT JSON ONLY with this schema: "
-            "{\"initiatives\": [{\"name\": string, \"rationale\": string, \"owner\": string, "
-            "\"timeline\": string, \"dependencies\": [string]}]}. "
-            "Ensure names are short and actionable.\n\n"
-            "Peer outputs:\n"
-            + "\n\n".join(content_blocks)
+        task = (
+            "Rank the AI strategy initiatives by consensus and business impact. "
+            "Select the top 3 to prioritize for the roadmap."
         )
 
         try:
-            response = await provider.generate(prompt=prompt)
-            payload = self._safe_parse_json(response.content)
-            initiatives = payload.get("initiatives") if isinstance(payload, dict) else None
-            if isinstance(initiatives, list):
-                normalized = []
-                for item in initiatives[:3]:
-                    if not isinstance(item, dict):
-                        continue
-                    name = str(item.get("name", "")).strip()
-                    if not name:
-                        continue
-                    normalized.append(
-                        {
-                            "name": name,
-                            "rationale": str(item.get("rationale", "")).strip(),
-                            "owner": str(item.get("owner", "Strategy")).strip() or "Strategy",
-                            "timeline": str(item.get("timeline", "Next 6-12 months")).strip(),
-                            "dependencies": item.get("dependencies")
-                            if isinstance(item.get("dependencies"), list)
-                            else ["Data", "Change management"],
-                        }
-                    )
-                return normalized
+            decision = await rank_candidates_with_llm(
+                task=task,
+                candidates=candidates,
+                llm_provider=provider,
+                criteria=["Consensus across peers", "Business impact", "Feasibility"],
+            )
         except Exception as exc:
             logger.warning("LLM ranking failed: %s", exc)
             return []
 
-        return []
+        initiatives = []
+        for candidate_id in decision.ranked_ids[:3]:
+            meta = candidates_map.get(candidate_id)
+            if not meta:
+                continue
+            initiatives.append(
+                {
+                    "name": candidate_id,
+                    "rationale": meta.get("rationale", ""),
+                    "owner": meta.get("owner", "Strategy"),
+                    "timeline": meta.get("timeline", "Next 6-12 months"),
+                    "dependencies": meta.get("dependencies", ["Data", "Change management"]),
+                }
+            )
 
-    def _safe_parse_json(self, content: str) -> dict[str, Any]:
-        if not content:
-            return {}
-        cleaned = content.strip()
-        if cleaned.startswith("```"):
-            cleaned = cleaned.strip("`")
-            cleaned = cleaned.replace("json", "", 1).strip()
-        try:
-            return json.loads(cleaned)
-        except json.JSONDecodeError:
-            start = cleaned.find("{")
-            end = cleaned.rfind("}")
-            if start == -1 or end == -1 or end <= start:
-                return {}
-            try:
-                return json.loads(cleaned[start : end + 1])
-            except json.JSONDecodeError:
-                return {}
+        return initiatives
 
     def _extract_candidate_initiatives(self, messages: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
         candidates: dict[str, dict[str, Any]] = {}
