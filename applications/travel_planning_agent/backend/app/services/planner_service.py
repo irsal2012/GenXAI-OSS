@@ -347,7 +347,7 @@ async def create_plan(
     itinerary_node = result.get("itinerary_node") or {}
     budget_node = result.get("budget_node") or {}
     review_node = result.get("review_node") or {}
-    summary_node = result.get("summary_node") or {}
+    summary_node = result.get("review_node") or {}
     coordinator_node = _wrap_agent_node(result.get("coordinator_node"))
     coordinator_final_node = _wrap_agent_node(
         result.get("coordinator_final_node") or result.get("coordinator_node")

@@ -19,7 +19,7 @@ class StreamingEnhancedGraph(EnhancedGraph):
     ) -> None:
         node = self.nodes.get(node_id)
         if node and node_id == "coordinator_node" and node.status == NodeStatus.COMPLETED:
-            if "summary_node" in state and not state.get("_coordinator_reentry_done"):
+            if "review_node" in state and not state.get("_coordinator_reentry_done"):
                 state["_coordinator_reentry_done"] = True
                 node.status = NodeStatus.PENDING
                 node.result = None
