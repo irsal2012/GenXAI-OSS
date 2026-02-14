@@ -5,11 +5,27 @@ from genxai.core.agent.registry import AgentRegistry
 from genxai.core.graph.edges import Edge
 from genxai.core.graph.executor import EnhancedGraph
 from genxai.core.agent.runtime import AgentRuntime
-from genxai.core.graph.nodes import NodeType
+from genxai.core.graph.nodes import NodeType, NodeStatus
 from genxai.tools.registry import ToolRegistry
 
 
 class StreamingEnhancedGraph(EnhancedGraph):
+    async def _execute_node(
+        self,
+        node_id: str,
+        state: Dict[str, Any],
+        max_iterations: int,
+        event_callback=None,
+    ) -> None:
+        node = self.nodes.get(node_id)
+        if node and node_id == "coordinator_node" and node.status == NodeStatus.COMPLETED:
+            if "summary_node" in state and not state.get("_coordinator_reentry_done"):
+                state["_coordinator_reentry_done"] = True
+                node.status = NodeStatus.PENDING
+                node.result = None
+                node.error = None
+        await super()._execute_node(node_id, state, max_iterations, event_callback)
+
     async def _execute_node_logic(self, node: Any, state: Dict[str, Any], max_iterations: int = 100) -> Any:
         if node.type == NodeType.AGENT:
             agent_id = node.config.data.get("agent_id")
@@ -150,26 +166,12 @@ def build_travel_workflow() -> EnhancedGraph:
         role="Quality Reviewer",
         goal=(
             "Ensure plan meets safety, budget, and preference constraints. "
-            "Return JSON with keys: summary (string), recommendations (array of strings), notes (string)."
+            "Return JSON with keys: summary (string), recommendations (array of strings), notes (string), "
+            "highlights (array of strings), daily_recommendations (array of objects with day and activities)."
         ),
         backstory=(
             "Risk-aware QA specialist who audits travel plans for policy compliance, safety gaps, "
             "and missed traveler preferences."
-        ),
-        llm_model="gpt-4o",
-        temperature=0.2,
-    )
-    summarizer = AgentFactory.create_agent(
-        id="summary_agent",
-        role="Travel Summary Curator",
-        goal=(
-            "Summarize the full travel plan in plain text using all prior agent outputs. "
-            "Include recommended activities for each day. Return JSON with keys: summary (string), "
-            "highlights (array of strings), daily_recommendations (array of objects with day and activities)."
-        ),
-        backstory=(
-            "Executive assistant turned storyteller who condenses complex itineraries into clear, "
-            "traveler-friendly summaries with standout highlights."
         ),
         llm_model="gpt-4o",
         temperature=0.2,
@@ -182,7 +184,6 @@ def build_travel_workflow() -> EnhancedGraph:
         budgeter,
         itinerary,
         reviewer,
-        summarizer,
     ]:
         AgentRegistry.register(agent)
 
@@ -195,11 +196,16 @@ def build_travel_workflow() -> EnhancedGraph:
     graph.add_node(AgentNode(id="budget_node", agent_id="budget_agent"))
     graph.add_node(AgentNode(id="itinerary_node", agent_id="itinerary_agent"))
     graph.add_node(AgentNode(id="review_node", agent_id="reviewer_agent"))
-    graph.add_node(AgentNode(id="summary_node", agent_id="summary_agent"))
     graph.add_node(OutputNode())
 
     graph.add_edge(Edge(source="input", target="coordinator_node"))
-    graph.add_edge(Edge(source="coordinator_node", target="delegator_node"))
+    graph.add_edge(
+        Edge(
+            source="coordinator_node",
+            target="delegator_node",
+            condition=lambda state: "review_node" not in state,
+        )
+    )
 
     graph.add_edge(
         Edge(source="delegator_node", target="intake_node", metadata={"parallel": True})
@@ -218,9 +224,14 @@ def build_travel_workflow() -> EnhancedGraph:
     graph.add_edge(Edge(source="research_node", target="review_node"))
     graph.add_edge(Edge(source="budget_node", target="review_node"))
     graph.add_edge(Edge(source="itinerary_node", target="review_node"))
-    graph.add_edge(Edge(source="review_node", target="summary_node"))
-    graph.add_edge(Edge(source="summary_node", target="coordinator_node"))
-    graph.add_edge(Edge(source="coordinator_node", target="output"))
+    graph.add_edge(Edge(source="review_node", target="coordinator_node"))
+    graph.add_edge(
+        Edge(
+            source="coordinator_node",
+            target="output",
+            condition=lambda state: "review_node" in state,
+        )
+    )
 
     return graph
 
