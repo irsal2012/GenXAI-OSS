@@ -1,6 +1,6 @@
 # GenXAI - Advanced Agentic AI Framework
 
-**Version:** 0.1.6  
+**Version:** 1.0.0  
 **Status:** Active Development  
 **License:** MIT
 # Irsal Imran - [irsal2025@gmail.com](mailto:irsal2025@gmail.com)
