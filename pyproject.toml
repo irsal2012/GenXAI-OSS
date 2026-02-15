@@ -111,11 +111,10 @@ all = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/genxai/genxai"
+Homepage = "https://genxai.dev"
 Documentation = "https://docs.genxai.dev"
-Repository = "https://github.com/genxai/genxai"
-Issues = "https://github.com/genxai/genxai/issues"
-Enterprise = "https://github.com/genxai/genxai-enterprise"
+Repository = "https://github.com/genexsus-ai/genxai"
+Issues = "https://github.com/genexsus-ai/genxai/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
